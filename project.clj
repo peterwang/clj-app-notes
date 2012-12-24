@@ -11,6 +11,7 @@
                  [environ "0.2.1"]
                  [com.cemerick/drawbridge "0.0.6"]]
   :min-lein-version "2.0.0"
+  :repl-options {:port 64005}
   :plugins [[environ/environ.lein "0.2.1"]]
   :hooks [environ.leiningen.hooks]
   :profiles {:production {:env {:production true}}})
