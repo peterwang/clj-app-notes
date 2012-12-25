@@ -8,6 +8,9 @@
             [ring.middleware.session.cookie :as cookie]
             [ring.adapter.jetty :as jetty]
             [ring.middleware.basic-authentication :as basic]
+            [hiccup.core :refer [h]]
+            [hiccup.page :refer [html5 include-css]]
+            [hiccup.form :refer [form-to text-area text-field submit-button]]
             [cemerick.drawbridge :as drawbridge]
             [environ.core :refer [env]]))
 
@@ -20,16 +23,38 @@
       (session/wrap-session)
       (basic/wrap-basic-authentication authenticated?)))
 
+(defn layout [title & body]
+  (html5
+   [:head
+    [:title title]
+    (include-css "/css/reset.css")]
+   (into [:body] body)))
+
+(defn info []
+  (layout
+   "info page"
+   [:h1 "info page"]))
+
+(defn message []
+  (layout
+   "Input Message"
+   (form-to [:post "/"]
+            (text-area {:placeholder "say something..."} "message")
+            [:br]
+            (text-field {:placeholder "name"} "id")
+            (submit-button "post it!"))))
+
+(defn show-message [id message]
+  (layout
+   "Show Message"
+   [:p (h id) " says " (h message)]))
+
 (defroutes app
   (ANY "/repl" {:as req}
        (drawbridge req))
-  (GET "/" []
-       {:status 200
-        :headers {"Content-Type" "text/plain"}
-        :body (pr-str ["Hello" :from 'Heroku])})
-  (GET "/info" []
-       {:status 200
-        :body "info"})
+  (GET "/" [] (message))
+  (POST "/" [id message] (show-message id message))
+  (GET "/info" [] (info))
   (ANY "*" []
        (route/not-found (slurp (io/resource "404.html")))))
 
